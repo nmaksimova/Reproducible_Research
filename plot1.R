@@ -36,32 +36,37 @@ states <- unique(data$Provider.State)
 levels(data$Provider.State)
 # Getting unique medical conditions in the datasets
 levels(data$DRG.Definition)
+levels(data$DRG.Definition) <- c("194", "292", "392", "641", "690", "871")
+conditions <- unique(data$DRG.Definition)
+
 
 # There are 6 uniques states and 6 unique conditions in the giving dataset.
-# So, I decided to create 6 differnet plots for each state and
-# on every plot for every state show the relationship bwtween mean covered charges
-# and mean total payments vary by medical condition.
+# I am creating a matrix of plots, 6x6.
 
 
 pdf("plot2.pdf")
 
-# Creating a multipanel with 6 plots in a row and 
-# adjusting inner and outer margins.
+# Creating a multipanel plot for each state and each medical condition.
+# Adjusting margins.
 
-#par(mfrow = c(6,1), oma = c(4,4,4,2), mar = rep(2,4))
-par(mfrow = c(6,1))
+par(mfrow = c(6,6), oma = c(2,2,2,2), mar=c(2,2,2,2))
 
 for (i in states) {
-        with(subset(data, Provider.State == i),
+        for (j in conditions) {
+        with(subset(data, Provider.State == i & DRG.Definition == j),
              plot(Average.Covered.Charges, Average.Total.Payments, 
-                  main = paste(i),
+                  main = paste(i, j),
                   ylim = range(data$Average.Total.Payments),
                   xlim = range(data$Average.Covered.Charges),
-                  col = data$DRG.Definition, pch = 16)
+                  xlab = "Avg. Cov.$", ylab = "Avg. Tot.$",
+                  col = adjustcolor("green", alpha = 0.5), pch = 16
+                  )
         )
+
         abline(lm(Average.Total.Payments~Average.Covered.Charges,
-                  subset(data, Provider.State == i)), 
-               col = data$DRG.Definition)        
+                  subset(data, Provider.State == i & DRG.Definition == j)), 
+               col = "blue")   
+        }
 }
 
 dev.off()
